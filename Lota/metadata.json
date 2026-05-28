@@ -1,0 +1,6 @@
+{
+  "name": "Lota",
+  "description": "PWA em tempo real para acompanhar a fila do estacionamento da PUC-Rio.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
