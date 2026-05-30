@@ -94,14 +94,14 @@ export default function Report() {
             >
               <div className="mb-4">
                 {reportedStatus === 'green' && <CheckCircle2 size={56} className="text-emerald-500 animate-bounce stroke-[2.5px]" />}
-                {reportedStatus === 'yellow' && <Clock size={56} className="text-amber-550 animate-bounce stroke-[2.5px]" />}
+                {reportedStatus === 'yellow' && <Clock size={56} className="text-amber-500 animate-bounce stroke-[2.5px]" />}
                 {reportedStatus === 'red' && <AlertTriangle size={56} className="text-rose-500 animate-bounce stroke-[2.5px]" />}
               </div>
               
               <h3 className={`text-2xl font-sans font-black tracking-tight ${accentTextTitleClass}`}>
                 {hasReportedToday ? 'Relato Atualizado!' : 'Obrigado por Colaborar!'}
               </h3>
-              <p className={`mt-2 text-sm font-sans max-w-xs px-2 leading-relaxed ${isDark ? 'text-zinc-450' : 'text-zinc-650'}`}>
+              <p className={`mt-2 text-sm font-sans max-w-xs px-2 leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
                 {hasReportedToday 
                   ? 'Seu relato foi atualizado para manter o painel o mais preciso possível.'
                   : 'Sua contribuição foi registrada com sucesso e ajuda toda a comunidade da PUC-Rio.'}

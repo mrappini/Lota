@@ -23,13 +23,13 @@ export default function Status() {
   const bgStyles = {
     green: isDark 
       ? 'from-emerald-950/20 via-zinc-900 to-zinc-900 border-emerald-500/15 text-white' 
-      : 'from-emerald-250/40 via-white to-white border-emerald-500/30 text-zinc-900 shadow-[inset_0_2px_15px_-5px_rgba(16,185,129,0.15)]',
+      : 'from-emerald-300/40 via-white to-white border-emerald-500/30 text-zinc-900 shadow-[inset_0_2px_15px_-5px_rgba(16,185,129,0.15)]',
     yellow: isDark 
       ? 'from-amber-950/20 via-zinc-900 to-zinc-900 border-amber-500/15 text-white' 
-      : 'from-amber-250/40 via-white to-white border-amber-500/30 text-zinc-900 shadow-[inset_0_2px_15px_-5px_rgba(245,158,11,0.15)]',
+      : 'from-amber-300/40 via-white to-white border-amber-500/30 text-zinc-900 shadow-[inset_0_2px_15px_-5px_rgba(245,158,11,0.15)]',
     red: isDark 
       ? 'from-rose-950/20 via-zinc-900 to-zinc-900 border-rose-500/15 text-white' 
-      : 'from-rose-250/40 via-white to-white border-rose-500/30 text-zinc-900 shadow-[inset_0_2px_15px_-5px_rgba(244,63,94,0.15)]',
+      : 'from-rose-300/40 via-white to-white border-rose-500/30 text-zinc-900 shadow-[inset_0_2px_15px_-5px_rgba(244,63,94,0.15)]',
     none: isDark 
       ? 'from-zinc-800/10 via-zinc-900 to-zinc-900 border-zinc-800/15 text-white' 
       : 'from-zinc-100/60 via-white to-white border-zinc-200 text-zinc-900'
@@ -71,7 +71,7 @@ export default function Status() {
       sub: 'Toque em Reportar para ajudar a catalogar!',
       color: isDark 
         ? 'text-zinc-500 bg-zinc-800/10 border-zinc-700/20 font-bold' 
-        : 'text-zinc-800 bg-zinc-100 border-zinc-250 font-extrabold',
+        : 'text-zinc-800 bg-zinc-100 border-zinc-300 font-extrabold',
       radial: 'bg-zinc-700/5',
       icon: HelpCircle,
       iconColor: isDark ? 'text-zinc-400 font-normal' : 'text-zinc-500 font-semibold'
@@ -121,7 +121,7 @@ export default function Status() {
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 12, ease: 'linear' }}
           >
-            <Activity className={isDark ? 'text-zinc-400' : 'text-zinc-650'} size={14} />
+            <Activity className={isDark ? 'text-zinc-400' : 'text-zinc-600'} size={14} />
           </motion.div>
         </div>
       </div>
@@ -182,9 +182,9 @@ export default function Status() {
                 <span className={`flex items-center gap-1.5 ${isDark ? 'text-emerald-400' : 'text-emerald-700 font-bold'}`}>
                   <CheckCircle2 size={13} className={isDark ? 'text-emerald-400' : 'text-emerald-600'} /> Sem Fila
                 </span>
-                <span className={`${isDark ? 'text-zinc-550' : 'text-zinc-700'} font-mono font-bold`}>{greenCount} ({pGreen}%)</span>
+                <span className={`${isDark ? 'text-zinc-500' : 'text-zinc-700'} font-mono font-bold`}>{greenCount} ({pGreen}%)</span>
               </div>
-              <div className={`h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-zinc-850' : 'bg-zinc-200'}`}>
+              <div className={`h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${pGreen}%` }}
@@ -200,9 +200,9 @@ export default function Status() {
                 <span className={`flex items-center gap-1.5 ${isDark ? 'text-amber-400' : 'text-amber-800 font-bold'}`}>
                   <Clock size={13} className={isDark ? 'text-amber-400' : 'text-amber-600'} /> Fila Moderada
                 </span>
-                <span className={`${isDark ? 'text-zinc-550' : 'text-zinc-700'} font-mono font-bold`}>{yellowCount} ({pYellow}%)</span>
+                <span className={`${isDark ? 'text-zinc-500' : 'text-zinc-700'} font-mono font-bold`}>{yellowCount} ({pYellow}%)</span>
               </div>
-              <div className={`h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-zinc-850' : 'bg-zinc-200'}`}>
+              <div className={`h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${pYellow}%` }}
@@ -215,12 +215,12 @@ export default function Status() {
             {/* Red Reports bar */}
             <div>
               <div className="flex justify-between text-xs font-sans font-medium mb-1.5">
-                <span className={`flex items-center gap-1.5 ${isDark ? 'text-rose-450' : 'text-rose-700 font-bold'}`}>
-                  <AlertTriangle size={13} className={isDark ? 'text-rose-450' : 'text-rose-600'} /> Fila Intensa
+                <span className={`flex items-center gap-1.5 ${isDark ? 'text-rose-400' : 'text-rose-700 font-bold'}`}>
+                  <AlertTriangle size={13} className={isDark ? 'text-rose-400' : 'text-rose-600'} /> Fila Intensa
                 </span>
-                <span className={`${isDark ? 'text-zinc-550' : 'text-zinc-700'} font-mono font-bold`}>{redCount} ({pRed}%)</span>
+                <span className={`${isDark ? 'text-zinc-500' : 'text-zinc-700'} font-mono font-bold`}>{redCount} ({pRed}%)</span>
               </div>
-              <div className={`h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-zinc-850' : 'bg-zinc-200'}`}>
+              <div className={`h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${pRed}%` }}
@@ -237,7 +237,7 @@ export default function Status() {
       <div className={`rounded-[2rem] p-5 mb-auto z-10 ${
         isDark ? 'glass' : 'bg-white border border-zinc-200 shadow-md text-zinc-900'
       }`}>
-        <h4 className={`text-xs font-mono uppercase tracking-wider font-bold mb-4 ${isDark ? 'text-zinc-400' : 'text-zinc-650'}`}>
+        <h4 className={`text-xs font-mono uppercase tracking-wider font-bold mb-4 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
           ÚLTIMOS RELATOS GERAIS
         </h4>
 
@@ -261,7 +261,7 @@ export default function Status() {
                 label = 'Fila Intensa';
                 styleCls = 'bg-rose-500/10 text-rose-500 border-rose-500/20';
                 StatusIcon = AlertTriangle;
-                iconColor = isDark ? 'text-rose-450' : 'text-rose-600';
+                iconColor = isDark ? 'text-rose-400' : 'text-rose-600';
               }
 
               return (
@@ -270,12 +270,12 @@ export default function Status() {
                   className={`flex justify-between items-center p-3 rounded-2xl border transition-colors ${
                     isDark 
                       ? 'bg-white/5 border-white/5 hover:bg-white/10' 
-                      : 'bg-zinc-50 border-zinc-200 hover:bg-zinc-100 text-zinc-850'
+                      : 'bg-zinc-50 border-zinc-200 hover:bg-zinc-100 text-zinc-800'
                   }`}
                 >
                   <div className="flex items-center space-x-2.5">
                     <StatusIcon size={14} className={`${iconColor} shrink-0`} />
-                    <span className={`text-xs font-sans font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-850'}`}>{label}</span>
+                    <span className={`text-xs font-sans font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>{label}</span>
                   </div>
                   <span className="text-xs font-mono text-zinc-500 font-bold">{rTime}</span>
                 </div>

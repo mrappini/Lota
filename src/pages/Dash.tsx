@@ -131,7 +131,7 @@ export default function Dash() {
           {formattedDate}
         </span>
         {error && (
-          <div className="mt-2 text-[10px] font-sans px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-450 border border-rose-500/20 flex items-center gap-1.5 self-start">
+          <div className="mt-2 text-[10px] font-sans px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1.5 self-start">
             <span>⚠️</span> Erro: {error}
           </div>
         )}
@@ -143,7 +143,7 @@ export default function Dash() {
           transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
           className="mb-8 relative flex items-center justify-center"
         >
-          <div className="absolute inset-0 blur-3xl opacity-60 scale-150 rounded-full" style={{ backgroundColor: activeConfig.glowColor }}></div>
+          <div className="absolute inset-0 blur-3xl opacity-60 scale-200 rounded-full" style={{ backgroundColor: activeConfig.glowColor }}></div>
           <StatusIcon 
             size={110} 
             className={`relative z-10 ${activeConfig.accentText} stroke-[2px] filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)]`} 

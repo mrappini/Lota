@@ -6,32 +6,8 @@ import Dash from './pages/Dash';
 import Report from './pages/Report';
 import Status from './pages/Status';
 import History from './pages/History';
+import { Download, ChevronRight, X, AlertTriangle, User, ParkingSquare, Coffee, Home, Plus, Activity, BarChart3, Sun, Moon, Laptop, Settings, Sliders, Database, CheckCircle2, Clock, Sparkles, ChevronDown, Info, HelpCircle, ShieldAlert, Lock, Car, Utensils, LogOut } from 'lucide-react';
 import { LotaLogo } from './components/LotaLogo';
-import { 
-  Home, 
-  Plus, 
-  Activity, 
-  BarChart3, 
-  Sun, 
-  Moon, 
-  Laptop, 
-  X, 
-  Settings, 
-  Sliders, 
-  Database, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle, 
-  Sparkles,
-  ChevronDown,
-  Info,
-  HelpCircle,
-  ShieldAlert,
-  Lock,
-  Car,
-  Utensils,
-  LogOut
-} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 function ThemeSelector() {
@@ -209,6 +185,7 @@ function AppContent() {
   const { isDark } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const { 
     currentStatus, 
     allReports,
@@ -241,6 +218,27 @@ function AppContent() {
       setActiveDomain('cafeteria');
     }
   }, [location.pathname, activeDomain, setActiveDomain]);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        }
+        setDeferredPrompt(null);
+      });
+    }
+  };
 
   // Secure controls & funny responses
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -804,6 +802,37 @@ function AppContent() {
 
         {/* Scrollable contents zone */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto pb-24 relative">
+          
+          {/* PWA Install Banner */}
+          <AnimatePresence>
+            {deferredPrompt && (
+              <motion.div 
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -50 }}
+                className="fixed top-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm z-50"
+              >
+                <div className={`p-4 rounded-3xl border shadow-2xl flex items-center justify-between gap-4 backdrop-blur-xl ${isDark ? 'bg-zinc-900/90 border-white/10 text-white' : 'bg-white/90 border-zinc-200 text-zinc-900'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-500/10 p-2 rounded-xl">
+                      <Download size={20} className="text-blue-500" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold leading-tight">Instalar Aplicativo</span>
+                      <span className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Acesso rápido na tela inicial</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={handleInstallClick}
+                    className="px-5 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-full shadow-lg hover:bg-blue-500 active:scale-95 transition-all"
+                  >
+                    Instalar
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <AnimatePresence mode="wait">
             {/* @ts-ignore - React Router types sometimes miss key, but AnimatePresence requires it directly */}
             <Routes location={location} key={location.pathname}>

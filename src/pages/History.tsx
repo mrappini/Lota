@@ -157,7 +157,7 @@ export default function History() {
       {error && (
         <div className={`mb-4 p-3.5 rounded-2xl border text-xs font-sans transition-all leading-relaxed flex items-start gap-2 ${
           isDark 
-            ? 'bg-rose-500/10 border-rose-500/20 text-rose-350' 
+            ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' 
             : 'bg-rose-50 border-rose-200 text-rose-900'
         }`}>
           <span className="text-sm shrink-0">⚠️</span>
@@ -189,7 +189,7 @@ export default function History() {
             <Clock size={10} className="text-zinc-400" />
             <span>Horário Pico</span>
           </div>
-          <p className={`text-base font-sans font-extrabold mt-1 tracking-tight ${isDark ? 'text-zinc-150' : 'text-zinc-950'}`}>
+          <p className={`text-base font-sans font-extrabold mt-1 tracking-tight ${isDark ? 'text-zinc-200' : 'text-zinc-950'}`}>
             {totalDayReports > 0 && peakHourData.weight > 0 ? `${peakHourData.hour}:00` : '--:--'}
           </p>
           <span className="text-[9px] font-sans text-zinc-500 block mt-0.5">maior concentração</span>
@@ -214,7 +214,7 @@ export default function History() {
               </span>
             )}
             {consensusStatus === 'red' && (
-              <span className={`${isDark ? 'text-rose-450' : 'text-rose-700'} flex items-center gap-1 font-bold`}>
+              <span className={`${isDark ? 'text-rose-400' : 'text-rose-700'} flex items-center gap-1 font-bold`}>
                 <AlertTriangle size={12} className="shrink-0" /> Demorado
               </span>
             )}
@@ -244,7 +244,7 @@ export default function History() {
               className={`flex-1 text-center py-1.5 px-0.5 rounded-xl text-xs font-sans font-bold cursor-pointer transition-all ${
                 isSelected
                   ? isDark 
-                    ? 'bg-zinc-850 text-white font-extrabold border border-zinc-800'
+                    ? 'bg-zinc-800 text-white font-extrabold border border-zinc-800'
                     : 'bg-white text-zinc-950 shadow-sm font-extrabold border border-zinc-200'
                   : isDark
                     ? 'text-zinc-400 hover:text-white'
@@ -290,7 +290,7 @@ export default function History() {
 
         {totalDayReports === 0 ? (
           <div className="text-center py-12 px-4 transition-all">
-            <Database size={32} className="text-zinc-650 dark:text-zinc-800 mx-auto mb-2 animate-pulse" />
+            <Database size={32} className="text-zinc-600 dark:text-zinc-800 mx-auto mb-2 animate-pulse" />
             <h4 className={`text-xs font-sans font-bold mb-1 ${isDark ? 'text-zinc-400' : 'text-zinc-700'}`}>
               Nenhum relato no histórico
             </h4>
@@ -331,12 +331,12 @@ export default function History() {
                           isActive 
                             ? 'ring-2 ring-zinc-400 dark:ring-zinc-600 ring-offset-2 ring-offset-white dark:ring-offset-black scale-105' 
                             : 'hover:scale-110'
-                        } ${totalReports === 0 ? 'bg-zinc-150 dark:bg-zinc-900/60' : ''}`}
+                        } ${totalReports === 0 ? 'bg-zinc-200 dark:bg-zinc-900/60' : ''}`}
                       >
                         {totalReports > 0 ? (
                           <>
                             <div style={{ height: `${redPct}%` }} className="bg-rose-500 dark:bg-rose-600 w-full" />
-                            <div style={{ height: `${yellowPct}%` }} className="bg-amber-450 dark:bg-amber-500 w-full" />
+                            <div style={{ height: `${yellowPct}%` }} className="bg-amber-400 dark:bg-amber-500 w-full" />
                             <div style={{ height: `${greenPct}%` }} className="bg-emerald-500 dark:bg-emerald-600 w-full" />
                           </>
                         ) : (
@@ -345,7 +345,7 @@ export default function History() {
                       </div>
                     </div>
                     {/* Precise hour coordinates label */}
-                    <span className={`text-[10px] font-mono mt-1.5 select-none transition-colors duration-150 ${
+                    <span className={`text-[10px] font-mono mt-1.5 select-none transition-colors duration-200 ${
                       isActive 
                         ? 'text-amber-500 font-bold' 
                         : 'text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-800 dark:group-hover:text-zinc-300'
@@ -393,18 +393,18 @@ export default function History() {
                       >
                         <div>
                           <p className={`font-extrabold text-sm tracking-tight ${isDark ? 'text-amber-400' : 'text-amber-800'}`}>Detalhes de {activeHour}:00</p>
-                          <p className={`text-[10px] font-sans ${isDark ? 'text-zinc-450' : 'text-zinc-600'}`}>
+                          <p className={`text-[10px] font-sans ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
                             {selectedHourData.total} {selectedHourData.total === 1 ? 'registro' : 'registros recebidos'}
                           </p>
                         </div>
                         <div className="flex gap-3 items-center font-mono font-bold text-[11px] shrink-0">
-                          <span className={`flex items-center gap-1 ${isDark ? 'text-emerald-450' : 'text-emerald-700 font-bold'} mr-0.5`}>
+                          <span className={`flex items-center gap-1 ${isDark ? 'text-emerald-400' : 'text-emerald-700 font-bold'} mr-0.5`}>
                             <CheckCircle2 size={11} className="shrink-0" /> {selectedHourData.green}
                           </span>
-                          <span className={`flex items-center gap-1 ${isDark ? 'text-amber-400' : 'text-amber-750 font-bold'} mr-0.5`}>
+                          <span className={`flex items-center gap-1 ${isDark ? 'text-amber-400' : 'text-amber-700 font-bold'} mr-0.5`}>
                             <Clock size={11} className="shrink-0" /> {selectedHourData.yellow}
                           </span>
-                          <span className={`flex items-center gap-1 ${isDark ? 'text-rose-450' : 'text-rose-700 font-bold'}`}>
+                          <span className={`flex items-center gap-1 ${isDark ? 'text-rose-400' : 'text-rose-700 font-bold'}`}>
                             <AlertTriangle size={11} className="shrink-0" /> {selectedHourData.red}
                           </span>
                         </div>
@@ -495,7 +495,7 @@ export default function History() {
                         report.status === 'green' 
                           ? isDark 
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10' 
-                            : 'bg-emerald-100 text-emerald-850 border-emerald-300/40' 
+                            : 'bg-emerald-100 text-emerald-800 border-emerald-300/40' 
                           : report.status === 'yellow' 
                           ? isDark 
                             ? 'bg-amber-500/10 text-amber-400 border-amber-500/10' 
@@ -508,7 +508,7 @@ export default function History() {
                         {report.status === 'yellow' && 'Moderado'}
                         {report.status === 'red' && 'Lotado'}
                       </span>
-                      <span className={`text-[10px] font-mono ${isDark ? 'text-zinc-500' : 'text-zinc-450'}`}>
+                      <span className={`text-[10px] font-mono ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
                         ({getDayName(report.dayOfWeek).substring(0, 3)}, {String(report.hour).padStart(2, '0')}h)
                       </span>
                     </div>
