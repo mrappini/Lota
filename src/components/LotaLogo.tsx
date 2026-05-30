@@ -1,11 +1,16 @@
 import React from 'react';
-
+import { motion } from 'motion/react';
 interface LotaLogoProps {
   className?: string;
   isDark?: boolean;
+  activeDomain?: 'parking' | 'cafeteria' | null;
 }
 
-export const LotaLogo: React.FC<LotaLogoProps> = ({ className = 'h-8 w-auto', isDark = true }) => {
+export const LotaLogo: React.FC<LotaLogoProps> = ({ className = 'h-8 w-auto', isDark = true, activeDomain = null }) => {
+  const bar1Color = activeDomain === 'parking' ? '#FACC15' : activeDomain === 'cafeteria' ? '#3B82F6' : '#3B82F6';
+  const bar2Color = activeDomain === 'parking' ? '#FACC15' : activeDomain === 'cafeteria' ? '#3B82F6' : (isDark ? '#FFFFFF' : '#000000');
+  const bar3Color = activeDomain === 'parking' ? '#FACC15' : activeDomain === 'cafeteria' ? '#3B82F6' : '#FACC15';
+
   return (
     <svg 
       viewBox="0 0 160 48" 
@@ -29,9 +34,9 @@ export const LotaLogo: React.FC<LotaLogoProps> = ({ className = 'h-8 w-auto', is
         strokeLinejoin="round" 
       />
       {/* Inner parking/menu pill bars inside L */}
-      <rect x="25" y="11" width="16" height="5" rx="2.5" />
-      <rect x="25" y="19" width="16" height="5" rx="2.5" />
-      <rect x="25" y="27" width="16" height="5" rx="2.5" />
+      <motion.rect x="25" y="11" width="16" height="5" rx="2.5" fill={bar1Color} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity, delay: 0 }} />
+      <motion.rect x="25" y="19" width="16" height="5" rx="2.5" fill={bar2Color} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity, delay: 0.3 }} />
+      <motion.rect x="25" y="27" width="16" height="5" rx="2.5" fill={bar3Color} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity, delay: 0.6 }} />
 
       {/* Letter 'o' */}
       <circle 

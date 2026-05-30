@@ -1,12 +1,8 @@
-import { Timestamp } from 'firebase/firestore';
-
 export function getRelativeTime(timestamp: any): string {
   if (!timestamp) return 'sem registro';
 
   const now = new Date();
-  const date = timestamp instanceof Timestamp 
-    ? timestamp.toDate() 
-    : new Date(timestamp);
+  const date = new Date(timestamp);
   
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.max(0, Math.floor(diffMs / 60000));

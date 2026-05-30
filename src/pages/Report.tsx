@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
 
 export default function Report() {
-  const { submitReport, hasReportedToday, todayReport } = useLota();
+  const { submitReport, hasReportedToday, todayReport, activeDomain } = useLota();
   const { isDark } = useTheme();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
@@ -29,11 +29,15 @@ export default function Report() {
     }, 2500);
   };
 
+  const isParking = activeDomain === 'parking';
+  const accentTextClass = isParking ? 'text-amber-950' : 'text-blue-950';
+  const accentTextTitleClass = isParking ? 'text-[#FACC15]' : 'text-blue-500';
+  
   const statusOptions = [
     {
       type: 'green' as StatusType,
-      title: 'Sem Fila',
-      description: 'Entrada livre e imediata',
+      title: isParking ? 'Sem Fila' : 'Livre',
+      description: isParking ? 'Entrada livre e imediata' : 'Vazio, sirva-se rápido',
       icon: CheckCircle2,
       bgClass: 'bg-[#22C55E] text-black border-transparent active:opacity-90 hover:opacity-95 mb-4',
       glow: 'shadow-emerald-950/20',
@@ -42,7 +46,7 @@ export default function Report() {
     {
       type: 'yellow' as StatusType,
       title: 'Fila Moderada',
-      description: 'Linha existente, mas correndo rápido',
+      description: isParking ? 'Linha existente, mas correndo rápido' : 'Alguma espera, mas andando',
       icon: Clock,
       bgClass: 'bg-[#FACC15] text-black border-transparent active:opacity-90 hover:opacity-95 mb-4',
       glow: 'shadow-amber-950/20',
@@ -51,7 +55,7 @@ export default function Report() {
     {
       type: 'red' as StatusType,
       title: 'Fila Intensa',
-      description: 'Lotação máxima ou tempo lento de espera',
+      description: isParking ? 'Lotação máxima ou tempo lento' : 'Catracas lotadas e lento',
       icon: AlertTriangle,
       bgClass: 'bg-[#EF4444] text-white border-transparent active:opacity-90 hover:opacity-95',
       glow: 'shadow-rose-950/20',
@@ -67,7 +71,7 @@ export default function Report() {
       exit={{ opacity: 0, y: -15 }}
       transition={{ duration: 0.3 }}
       className={`min-h-[75vh] flex flex-col justify-start p-5 relative rounded-3xl overflow-hidden shadow-2xl transition-all ${
-      isDark ? 'bg-[#080808] text-white' : 'bg-zinc-50 text-zinc-900 border border-zinc-200/50'
+      isDark ? 'bg-zinc-900 text-white border border-white/[0.03]' : 'bg-zinc-50 text-zinc-900 border border-zinc-200/50'
     }`}>
       {/* Dynamic confirm state overlay */}
       <AnimatePresence>
@@ -77,7 +81,7 @@ export default function Report() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className={`absolute inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-md p-6 transition-all ${
-              isDark ? 'bg-[#080808]/95' : 'bg-white/95'
+              isDark ? 'bg-zinc-900/95' : 'bg-white/95'
             }`}
           >
             <motion.div
@@ -94,7 +98,7 @@ export default function Report() {
                 {reportedStatus === 'red' && <AlertTriangle size={56} className="text-rose-500 animate-bounce stroke-[2.5px]" />}
               </div>
               
-              <h3 className="text-2xl font-sans font-black tracking-tight text-[#FACC15]">
+              <h3 className={`text-2xl font-sans font-black tracking-tight ${accentTextTitleClass}`}>
                 {hasReportedToday ? 'Relato Atualizado!' : 'Obrigado por Colaborar!'}
               </h3>
               <p className={`mt-2 text-sm font-sans max-w-xs px-2 leading-relaxed ${isDark ? 'text-zinc-450' : 'text-zinc-650'}`}>
@@ -110,8 +114,12 @@ export default function Report() {
       {/* Header instructions */}
       <div className="flex flex-col mb-5 mt-1 text-left px-1">
         <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Colaborativo</span>
-        <h2 className={`text-2xl font-sans font-extrabold tracking-tight mt-1 ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Como está a fila do estacionamento agora?</h2>
-        <p className={`text-xs font-sans mt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>Toque no botão que melhor descreve a sua visão da lotação.</p>
+        <h2 className={`text-2xl font-sans font-extrabold tracking-tight mt-1 ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
+          {activeDomain === 'parking' ? 'Como está a fila do estacionamento agora?' : 'Como está a fila do bandejão agora?'}
+        </h2>
+        <p className={`text-xs font-sans mt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+          Toque no botão que melhor descreve a sua visão da lotação.
+        </p>
       </div>
 
       {hasReportedToday && todayReport && (

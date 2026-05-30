@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LotaProvider, useLota } from './context/LotaContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import Dash from './pages/Dash';
@@ -27,12 +27,18 @@ import {
   Info,
   HelpCircle,
   ShieldAlert,
-  Lock
+  Lock,
+  Car,
+  Utensils,
+  LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 function ThemeSelector() {
   const { themeMode, setThemeMode, isDark } = useTheme();
+  const { activeDomain } = useLota();
+  const isParking = activeDomain === 'parking' || activeDomain === null;
+  const accentTextClass = isParking ? 'text-[#FACC15]' : 'text-blue-500';
 
   return (
     <div className={`flex items-center gap-0.5 p-1 rounded-full ${isDark ? 'bg-zinc-900/40 border border-white/5' : 'bg-zinc-200/65 border border-zinc-300/40'} text-xs font-sans`}>
@@ -62,7 +68,7 @@ function ThemeSelector() {
         onClick={() => setThemeMode('auto')}
         className={`p-1.5 rounded-full transition-all cursor-pointer ${
           themeMode === 'auto' 
-            ? `${isDark ? 'bg-zinc-800 text-[#FACC15]' : 'bg-zinc-400 text-zinc-950 shadow-sm'}` 
+            ? `${isDark ? `bg-zinc-800 ${accentTextClass}` : 'bg-zinc-400 text-zinc-950 shadow-sm'}` 
             : `${isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-800'}`
         }`}
         title="Automático (Sistema)"
@@ -77,26 +83,33 @@ function NavigationFooter() {
   const location = useLocation();
   const path = location.pathname;
   const { isDark } = useTheme();
+  const { activeDomain } = useLota();
+  
+  const isParking = activeDomain === 'parking' || activeDomain === null;
+  const accentBgClass = isParking ? 'bg-[#FACC15] shadow-amber-500/10' : 'bg-blue-500 shadow-blue-500/10';
+  const accentTextClass = isParking ? 'text-[#FACC15]' : 'text-blue-500';
+
+  const basePath = activeDomain === 'parking' ? '/estacionamento' : activeDomain === 'cafeteria' ? '/bandejao' : '';
 
   const navItems = [
     {
-      to: '/',
+      to: basePath || '/',
       label: 'Dash',
       icon: Home,
     },
     {
-      to: '/reportar',
+      to: `${basePath}/reportar`,
       label: 'Reportar',
       icon: Plus,
       isAction: true,
     },
     {
-      to: '/status',
+      to: `${basePath}/status`,
       label: 'Status',
       icon: Activity,
     },
     {
-      to: '/historico',
+      to: `${basePath}/historico`,
       label: 'Histórico',
       icon: BarChart3,
     },
@@ -128,7 +141,7 @@ function NavigationFooter() {
                 whileTap={{ scale: 0.9 }}
                 className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg cursor-pointer ${
                   isActive 
-                    ? 'bg-[#FACC15] text-black shadow-amber-500/10' 
+                    ? `${accentBgClass} text-black` 
                     : isDark
                       ? 'bg-zinc-900 border border-white/10 text-zinc-100 hover:bg-zinc-800'
                       : 'bg-white border border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-md'
@@ -138,7 +151,7 @@ function NavigationFooter() {
               </motion.div>
               <span className={`text-[10px] font-sans font-bold tracking-tight mt-1 ${
                 isActive 
-                  ? 'text-[#FACC15]' 
+                  ? accentTextClass 
                   : isDark 
                     ? 'text-zinc-500' 
                     : 'text-zinc-650'
@@ -160,7 +173,7 @@ function NavigationFooter() {
             {isActive && (
               <motion.div
                 layoutId="active-indicator"
-                className="absolute top-1 w-1.5 h-1.5 rounded-full bg-[#FACC15]"
+                className={`absolute top-1 w-1.5 h-1.5 rounded-full ${isParking ? 'bg-[#FACC15]' : 'bg-blue-500'}`}
                 transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               />
             )}
@@ -169,7 +182,7 @@ function NavigationFooter() {
               size={20} 
               className={`transition-colors duration-250 ${
                 isActive 
-                  ? 'text-[#FACC15]' 
+                  ? accentTextClass 
                   : isDark 
                     ? 'text-zinc-500 hover:text-zinc-350' 
                     : 'text-zinc-400 hover:text-zinc-800'
@@ -178,7 +191,7 @@ function NavigationFooter() {
             
             <span className={`text-[10px] font-sans font-extrabold tracking-tight mt-1 ${
               isActive 
-                ? 'text-[#FACC15]' 
+                ? accentTextClass 
                 : isDark 
                   ? 'text-zinc-500' 
                   : 'text-zinc-550'
@@ -195,12 +208,15 @@ function NavigationFooter() {
 function AppContent() {
   const { isDark } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   const { 
     currentStatus, 
-    allReports, 
     adminOverride, 
-    setAdminOverride, 
-    injectAdminReports 
+    setAdminOverride,
+    clearMyVote,
+    todayReport,
+    activeDomain,
+    setActiveDomain
   } = useLota();
 
   const [clickCount, setClickCount] = useState(0);
@@ -211,6 +227,19 @@ function AppContent() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isInjecting, setIsInjecting] = useState(false);
   const [adminNotification, setAdminNotification] = useState<string | null>(null);
+
+  const isParking = activeDomain === 'parking' || activeDomain === null;
+  const accentTextClass = isParking ? 'text-[#FACC15]' : 'text-blue-500';
+  const accentBgClass = isParking ? 'bg-[#FACC15]' : 'bg-blue-500';
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/estacionamento') && activeDomain !== 'parking') {
+      setActiveDomain('parking');
+    } else if (path.startsWith('/bandejao') && activeDomain !== 'cafeteria') {
+      setActiveDomain('cafeteria');
+    }
+  }, [location.pathname, activeDomain, setActiveDomain]);
 
   // Secure controls & funny responses
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -274,23 +303,10 @@ function AppContent() {
     }
   };
 
-  const handleInject = async (status: 'green' | 'yellow' | 'red') => {
-    if (isInjecting) return;
-    setIsInjecting(true);
-    showAdminToast(`Injetando 5 relatos '${status.toUpperCase()}' no Firebase...`);
-    try {
-      await injectAdminReports(status, 5);
-      showAdminToast(`✅ Banco atualizado! Consenso recalculado.`);
-    } catch (err) {
-      showAdminToast(`❌ Falha ao injetar relatos.`);
-    } finally {
-      setIsInjecting(false);
-    }
-  };
 
   return (
     <div className={`min-h-screen flex justify-center items-center font-sans antialiased overflow-x-hidden p-0 sm:p-4 transition-colors duration-500 ${
-      isDark ? 'bg-[#080808] text-white' : 'bg-zinc-100 text-zinc-900'
+      isDark ? 'bg-[#121212] text-white' : 'bg-zinc-100 text-zinc-900'
     }`}>
       
       {/* Absolute Admin micro-toasts feedback */}
@@ -309,9 +325,78 @@ function AppContent() {
 
       <div className={`w-full max-w-md h-screen sm:h-[85vh] sm:max-h-[900px] sm:rounded-[3rem] sm:border shadow-2xl relative flex flex-col overflow-hidden transition-all duration-500 ${
         isDark 
-          ? 'sm:border-zinc-900/40 bg-[#080808]' 
+          ? 'sm:border-zinc-800/40 bg-[#18181b]' 
           : 'sm:border-zinc-200/60 bg-zinc-50'
       }`}>
+
+        {activeDomain === null ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center h-full w-full p-6 relative"
+          >
+            {/* Background ambient glow - dynamic shapes */}
+            <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-[100px] pointer-events-none transition-all duration-1000 ${
+              isDark ? 'bg-blue-600/10' : 'bg-blue-300/30'
+            }`}></div>
+            <div className={`absolute bottom-0 left-0 w-80 h-80 rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${
+              isDark ? 'bg-[#FACC15]/10' : 'bg-amber-300/30'
+            }`}></div>
+
+            <div className="text-center mb-10 z-10">
+              <div className="flex justify-center mb-5">
+                <LotaLogo className="h-12 w-auto drop-shadow-2xl" isDark={isDark} activeDomain={activeDomain} />
+              </div>
+              <h1 className="text-[28px] font-black font-sans tracking-tight mb-2">Selecione o Fluxo</h1>
+              <p className={`text-[13px] font-sans font-medium max-w-[240px] mx-auto leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                Escolha qual área você deseja monitorar a lotação agora.
+              </p>
+            </div>
+
+            <div className="w-full flex flex-col space-y-4 max-w-sm z-10">
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => { setActiveDomain('parking'); navigate('/estacionamento'); }}
+                className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all cursor-pointer shadow-lg overflow-hidden relative group ${
+                  isDark 
+                    ? 'bg-zinc-900/60 border-white/5 hover:border-[#FACC15]/40 hover:bg-zinc-900/80 backdrop-blur-sm' 
+                    : 'bg-white border-zinc-200 hover:border-[#FACC15]/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)]'
+                }`}
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#FACC15] blur-[80px] rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
+                <div className="p-3 bg-[#FACC15]/10 text-[#FACC15] rounded-2xl mb-4 border border-[#FACC15]/20">
+                  <Car size={26} className="stroke-[2.5px]" />
+                </div>
+                <div className="text-left font-sans">
+                  <h2 className="font-black text-xl tracking-tight mb-1">Estacionamento</h2>
+                  <p className={`text-[12px] font-medium ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>Guarita principal e trânsito da PUC-Rio</p>
+                </div>
+              </motion.button>
+
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => { setActiveDomain('cafeteria'); navigate('/bandejao'); }}
+                className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all cursor-pointer shadow-lg overflow-hidden relative group ${
+                  isDark 
+                    ? 'bg-zinc-900/60 border-white/5 hover:border-blue-500/40 hover:bg-zinc-900/80 backdrop-blur-sm' 
+                    : 'bg-white border-zinc-200 hover:border-blue-500/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)]'
+                }`}
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 blur-[80px] rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
+                <div className="p-3 bg-blue-500/10 text-blue-500 rounded-2xl mb-4 border border-blue-500/20">
+                  <Utensils size={26} className="stroke-[2.5px]" />
+                </div>
+                <div className="text-left font-sans">
+                  <h2 className="font-black text-xl tracking-tight mb-1">Bandejão</h2>
+                  <p className={`text-[12px] font-medium ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>Filas das catracas do restaurante universitário</p>
+                </div>
+              </motion.button>
+            </div>
+          </motion.div>
+        ) : (
+          <>
 
         {/* Password Modal Overlay */}
         <AnimatePresence>
@@ -443,13 +528,13 @@ function AppContent() {
                 {/* Header branding */}
                 <div className="flex flex-col items-center text-center space-y-2 border-b border-zinc-500/10 pb-4">
                   <div className={`p-3 rounded-2xl flex items-center justify-center ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`}>
-                    <LotaLogo className="h-6 w-auto" isDark={isDark} />
+                    <LotaLogo className="h-6 w-auto" isDark={isDark} activeDomain={activeDomain} />
                   </div>
                   <h3 className="font-sans font-black text-base uppercase tracking-tight mt-1">
                     Como funciona o Lota?
                   </h3>
                   <p className={`text-[11px] font-sans ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                    A plataforma colaborativa de trânsito e guarita da PUC-Rio.
+                    A plataforma colaborativa da PUC-Rio.
                   </p>
                 </div>
 
@@ -461,7 +546,7 @@ function AppContent() {
                       O que é o Lota?
                     </span>
                     <p className={`leading-relaxed ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                      É um projeto comunitário focado em resolver ou mitigar o estresse da chegada na universidade. O <strong>Lota</strong> permite que alunos, professores e funcionários compartilhem a lotação e fila de entrada do estacionamento em tempo real.
+                      É um projeto comunitário focado em facilitar o seu dia a dia na universidade. O <strong>Lota</strong> permite que alunos, professores e funcionários monitorem e compartilhem a lotação do <strong>Estacionamento</strong> e das filas do <strong>Bandejão</strong> em tempo real.
                     </p>
                   </div>
 
@@ -479,7 +564,7 @@ function AppContent() {
                       <div>
                         <h4 className="font-extrabold text-[11px] text-zinc-500 uppercase tracking-tight">1. Olhe o Status Geral</h4>
                         <p className={`text-[11px] leading-snug ${isDark ? 'text-zinc-400' : 'text-zinc-650'}`}>
-                          A tela principal exibe o termômetro de consenso geral baseado nos informes recentes recebidos na guarita.
+                          A tela principal exibe o termômetro de consenso geral baseado nos informes recentes recebidos {activeDomain === 'parking' ? 'da guarita' : 'das catracas do bandejão'}.
                         </p>
                       </div>
                     </div>
@@ -492,7 +577,7 @@ function AppContent() {
                       <div>
                         <h4 className="font-extrabold text-[11px] text-zinc-500 uppercase tracking-tight">2. Envie Seu Reporte</h4>
                         <p className={`text-[11px] leading-snug ${isDark ? 'text-zinc-400' : 'text-zinc-650'}`}>
-                          Ao passar pela fila da guarita ou estacionamento, toque em <strong>"Reportar"</strong> e selecione a situação atual. Seu reporte atualiza o termômetro no mesmo instante!
+                          Ao passar pela fila {activeDomain === 'parking' ? 'da guarita ou estacionamento' : 'do restaurante'}, toque em <strong>"Reportar"</strong> e selecione a situação atual. Seu reporte atualiza o termômetro no mesmo instante!
                         </p>
                       </div>
                     </div>
@@ -527,7 +612,7 @@ function AppContent() {
         
         {/* Unified Top Header Bar */}
         <div className={`px-5 pt-5 pb-2 flex justify-between items-center z-40 transition-all ${
-          isDark ? 'bg-[#080808]/90' : 'bg-zinc-50/90'
+          isDark ? 'bg-zinc-950/90' : 'bg-zinc-50/90'
         }`}>
           <div 
             onClick={handleBrandingClick}
@@ -535,15 +620,23 @@ function AppContent() {
             title="Toque 5 vezes para habilitar controles de teste"
           >
             <div className="flex items-center gap-1.5 py-0.5">
-              <LotaLogo className="h-5.5 w-auto" isDark={isDark} />
+              <LotaLogo className="h-5.5 w-auto" isDark={isDark} activeDomain={activeDomain} />
               {isAdminUnlocked && (
                 <ShieldAlert size={12} className="text-[#FACC15] animate-pulse shrink-0" />
               )}
             </div>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-sans font-extrabold tracking-wide uppercase transition-all ${
-              isDark ? 'bg-zinc-900 text-[#FACC15] border border-zinc-800' : 'bg-zinc-200/80 text-zinc-800 border border-zinc-300/30'
-            }`}>
-              PUC-Rio
+            <span 
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveDomain(null);
+                navigate('/');
+              }}
+              className={`text-[10px] px-2 py-0.5 rounded-full font-sans font-extrabold tracking-wide uppercase transition-all flex items-center gap-1 cursor-pointer active:scale-95 ${
+              isDark ? `bg-zinc-900 hover:bg-zinc-800 ${accentTextClass} border border-zinc-800` : 'bg-zinc-200/80 hover:bg-zinc-300 text-zinc-800 border border-zinc-300/30'
+            }`}
+              title="Trocar de domínio"
+            >
+              {activeDomain === 'parking' ? 'Estacionamento' : 'Bandejão'} <ChevronDown size={10} />
             </span>
           </div>
 
@@ -661,37 +754,27 @@ function AppContent() {
                   </div>
                 </div>
 
-                {/* 2. Firebase Database Ingestion */}
+                {/* 2. Session Controls */}
                 <div className="space-y-1.5">
                   <span className="text-[9px] font-mono text-zinc-500 uppercase block font-bold">
-                    2. INJETA FISICO (+5 REPORTE NO FIRESTORE)
+                    2. CONTROLES DE SESSÃO & DEBUG
                   </span>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="grid grid-cols-2 gap-2">
                     <button
-                      disabled={isInjecting}
-                      onClick={() => handleInject('green')}
-                      className="py-1 text-[10px] rounded-lg font-mono bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-500 transition-all font-bold flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50 cursor-pointer"
+                      onClick={async () => {
+                        await clearMyVote();
+                        showAdminToast("🗑️ Seu voto de hoje foi deletado!");
+                      }}
+                      disabled={!todayReport}
+                      className="py-1.5 px-3 text-[10px] rounded-lg font-sans bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 text-rose-500 transition-all font-bold disabled:opacity-30 cursor-pointer flex items-center justify-center gap-1"
                     >
-                      <Database size={8} /> +5 Sem Fila
+                      Apagar Meu Voto
                     </button>
-                    <button
-                      disabled={isInjecting}
-                      onClick={() => handleInject('yellow')}
-                      className="py-1 text-[10px] rounded-lg font-mono bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 text-amber-550 transition-all font-bold flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50 cursor-pointer"
-                    >
-                      <Database size={8} /> +5 Andando
-                    </button>
-                    <button
-                      disabled={isInjecting}
-                      onClick={() => handleInject('red')}
-                      className="py-1 text-[10px] rounded-lg font-mono bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 text-rose-500 transition-all font-bold flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50 cursor-pointer"
-                    >
-                      <Database size={8} /> +5 Lotado
-                    </button>
+                    <div className="py-1.5 px-3 text-[10px] rounded-lg font-mono bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center gap-1 font-bold">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                      WSS Online
+                    </div>
                   </div>
-                  <span className="text-[8px] font-sans text-zinc-500 block leading-normal mt-1 text-center">
-                    (Injetar relatos cria registros recentes simulados com timestamp atualizado)
-                  </span>
                 </div>
 
                 <div className="pt-2.5 border-t border-zinc-800/30 flex justify-between items-center text-[9px] font-mono text-zinc-500 font-bold">
@@ -727,12 +810,24 @@ function AppContent() {
               <Route path="/reportar" element={<Report />} />
               <Route path="/status" element={<Status />} />
               <Route path="/historico" element={<History />} />
+              
+              <Route path="/estacionamento" element={<Dash />} />
+              <Route path="/estacionamento/reportar" element={<Report />} />
+              <Route path="/estacionamento/status" element={<Status />} />
+              <Route path="/estacionamento/historico" element={<History />} />
+
+              <Route path="/bandejao" element={<Dash />} />
+              <Route path="/bandejao/reportar" element={<Report />} />
+              <Route path="/bandejao/status" element={<Status />} />
+              <Route path="/bandejao/historico" element={<History />} />
             </Routes>
           </AnimatePresence>
         </main>
 
         {/* Premium action navigation footer */}
         <NavigationFooter />
+          </>
+        )}
         
       </div>
     </div>

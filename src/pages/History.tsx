@@ -14,10 +14,9 @@ import {
   CheckCircle2,
   AlertTriangle 
 } from 'lucide-react';
-import { Timestamp } from 'firebase/firestore';
 
 export default function History() {
-  const { allReports, loading, error, userId } = useLota();
+  const { allReports, loading, error, userId, activeDomain } = useLota();
   const { isDark } = useTheme();
   const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay());
   const [activeHour, setActiveHour] = useState<number | null>(null);
@@ -83,14 +82,9 @@ export default function History() {
   // Formatting timestamp naturally
   const formatReportTime = (createdAt: any) => {
     if (!createdAt) return 'Agora';
-    let date: Date;
-    if (createdAt instanceof Timestamp) {
-      date = createdAt.toDate();
-    } else if (createdAt.seconds) {
-      date = new Date(createdAt.seconds * 1000);
-    } else {
-      date = new Date(createdAt);
-    }
+    // Mapeamento temporário para o novo modelo do Supabase (timestamp) ou fallback do legado
+    const dateStr = typeof createdAt === 'string' ? createdAt : (createdAt?.timestamp || new Date());
+    const date = new Date(dateStr);
 
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -126,6 +120,10 @@ export default function History() {
   // Get historical density bar calculations (proportional heights absolute to busiest hours)
   const maxHourReportsCount = Math.max(...hoursData.map(h => h.total), 1);
 
+  const isParking = activeDomain === 'parking';
+  const accentTextClass = isParking ? 'text-[#FACC15]' : 'text-blue-500';
+  const bgDarkClass = 'bg-zinc-900';
+
   return (
     <motion.div
       id="history-screen"
@@ -133,8 +131,8 @@ export default function History() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -15 }}
       transition={{ duration: 0.3 }}
-      className={`min-h-[75vh] flex flex-col p-5 relative border-0 transition-colors duration-300 ${
-        isDark ? 'text-white bg-[#080808]' : 'text-zinc-900 bg-zinc-50'
+      className={`min-h-[75vh] flex flex-col justify-start p-5 relative rounded-3xl overflow-hidden shadow-2xl transition-all ${
+        isDark ? `text-white ${bgDarkClass} border border-white/[0.03]` : 'text-zinc-900 bg-zinc-50 border border-zinc-200/50'
       }`}
     >
       {/* Header Panel */}
@@ -178,7 +176,7 @@ export default function History() {
             <Database size={10} className="text-zinc-400" />
             <span>Registros</span>
           </div>
-          <p className={`text-base font-sans font-extrabold mt-1 tracking-tight ${isDark ? 'text-[#FACC15]' : 'text-zinc-950'}`}>
+          <p className={`text-base font-sans font-extrabold mt-1 tracking-tight ${isDark ? accentTextClass : 'text-zinc-950'}`}>
             {totalDayReports}
           </p>
           <span className="text-[9px] font-sans text-zinc-500 block mt-0.5">nesta {dayName.toLowerCase()}</span>
@@ -270,7 +268,7 @@ export default function History() {
           {totalDayReports > 0 ? (
             <span>
               Nas <strong>{dayName}s</strong>, o fluxo tende a acumular por volta de{' '}
-              <strong>{peakHourData.hour}:00</strong>. Prefira horários alternativos para desviar da fila do estacionamento.
+              <strong>{peakHourData.hour}:00</strong>. Prefira horários alternativos para desviar da fila {activeDomain === 'parking' ? 'do estacionamento' : 'do bandejão'}.
             </span>
           ) : (
             <span>Sem registros salvos para <strong>{dayName}</strong>. Envie a situação atual agora mesmo para registrar o status no painel.</span>

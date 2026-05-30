@@ -14,30 +14,31 @@ export default function Status() {
     lastReport,
     allReports,
     loading,
-    error
+    error,
+    activeDomain
   } = useLota();
   const { isDark } = useTheme();
 
   // Background style based on the consensus status
   const bgStyles = {
     green: isDark 
-      ? 'from-emerald-950/20 via-[#080808] to-[#080808] border-emerald-500/15 text-white' 
+      ? 'from-emerald-950/20 via-zinc-900 to-zinc-900 border-emerald-500/15 text-white' 
       : 'from-emerald-250/40 via-white to-white border-emerald-500/30 text-zinc-900 shadow-[inset_0_2px_15px_-5px_rgba(16,185,129,0.15)]',
     yellow: isDark 
-      ? 'from-amber-950/20 via-[#080808] to-[#080808] border-amber-500/15 text-white' 
+      ? 'from-amber-950/20 via-zinc-900 to-zinc-900 border-amber-500/15 text-white' 
       : 'from-amber-250/40 via-white to-white border-amber-500/30 text-zinc-900 shadow-[inset_0_2px_15px_-5px_rgba(245,158,11,0.15)]',
     red: isDark 
-      ? 'from-rose-950/20 via-[#080808] to-[#080808] border-rose-500/15 text-white' 
+      ? 'from-rose-950/20 via-zinc-900 to-zinc-900 border-rose-500/15 text-white' 
       : 'from-rose-250/40 via-white to-white border-rose-500/30 text-zinc-900 shadow-[inset_0_2px_15px_-5px_rgba(244,63,94,0.15)]',
     none: isDark 
-      ? 'from-zinc-900/10 via-[#080808] to-[#080808] border-zinc-800/15 text-white' 
+      ? 'from-zinc-800/10 via-zinc-900 to-zinc-900 border-zinc-800/15 text-white' 
       : 'from-zinc-100/60 via-white to-white border-zinc-200 text-zinc-900'
   };
 
   const badgeStyles = {
     green: {
-      text: 'Sem Fila',
-      sub: 'Excelente momento, sem fila no estacionamento da PUC-Rio.',
+      text: activeDomain === 'parking' ? 'Sem Fila' : 'Livre',
+      sub: activeDomain === 'parking' ? 'Excelente momento, sem fila no estacionamento da PUC-Rio.' : 'Bandejão com bastante espaço livre e sem espera nas catracas.',
       color: isDark 
         ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 font-bold' 
         : 'text-emerald-800 bg-emerald-100 border-emerald-300 font-extrabold',
@@ -47,7 +48,7 @@ export default function Status() {
     },
     yellow: {
       text: 'Fila Moderada',
-      sub: 'Alguma espera, mas com fluxo ágil e constante',
+      sub: activeDomain === 'parking' ? 'Alguma espera, mas com fluxo ágil e constante' : 'Fila começando a formar para pegar a comida, mas fluindo bem.',
       color: isDark 
         ? 'text-amber-400 bg-amber-500/10 border-amber-500/20 font-bold' 
         : 'text-amber-900 bg-amber-100 border-amber-300 font-extrabold',
@@ -57,7 +58,7 @@ export default function Status() {
     },
     red: {
       text: 'Fila Intensa',
-      sub: 'Fila volumosa, recomendável retornar mais tarde',
+      sub: activeDomain === 'parking' ? 'Fila volumosa, recomendável retornar mais tarde' : 'Restaurante lotado. Considere ir em outro horário se possível.',
       color: isDark 
         ? 'text-rose-400 bg-rose-500/10 border-rose-500/20 font-bold' 
         : 'text-rose-900 bg-rose-100 border-rose-300 font-extrabold',

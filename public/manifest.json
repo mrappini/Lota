@@ -1,0 +1,17 @@
+{
+  "name": "Lota PUC-Rio",
+  "short_name": "Lota",
+  "description": "Veja o fluxo do estacionamento e do bandejão da PUC-Rio em tempo real.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "icons": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/PUC-Rio_logo.svg/512px-PUC-Rio_logo.svg.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
