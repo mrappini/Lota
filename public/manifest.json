@@ -8,9 +8,9 @@
   "theme_color": "#121212",
   "icons": [
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/PUC-Rio_logo.svg/512px-PUC-Rio_logo.svg.png",
-      "sizes": "192x192 512x512",
-      "type": "image/png",
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]

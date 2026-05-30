@@ -211,6 +211,7 @@ function AppContent() {
   const navigate = useNavigate();
   const { 
     currentStatus, 
+    allReports,
     adminOverride, 
     setAdminOverride,
     clearMyVote,
