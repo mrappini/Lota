@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLota } from '../context/LotaContext';
 import { useTheme } from '../context/ThemeContext';
 import { getDayName } from '../utils/phrases';
@@ -14,12 +15,17 @@ export default function Dash() {
     lastReport,
     loading,
     error,
-    activeDomain
+    activeDomain,
+    allReports,
+    lotaPoints,
+    level
   } = useLota();
   const { isDark } = useTheme();
+  const navigate = useNavigate();
 
   const today = new Date();
   const dayOfWeek = today.getDay(); // 0-6
+  const currentHour = today.getHours();
   
   const formattedDate = today.toLocaleDateString('pt-BR', {
     day: 'numeric',
@@ -34,6 +40,34 @@ export default function Dash() {
   const accentTextClass = isParking ? 'text-[#FACC15]' : 'text-blue-500';
   const accentBgClass = isParking ? 'bg-[#FACC15]' : 'bg-blue-500';
   const accentGradientDarkClass = isParking ? 'from-[#FACC15]/20' : 'from-blue-500/20';
+
+  // Forecast Logic
+  const nextHour = currentHour + 1;
+  const reportsForNextHour = allReports.filter((r: any) => r.dayOfWeek === dayOfWeek && r.hour === nextHour);
+  
+  let forecastMessage = null;
+  let forecastColor = 'text-zinc-500';
+  let ForecastIcon = HelpCircle;
+
+  if (reportsForNextHour.length > 0) {
+    const green = reportsForNextHour.filter((r: any) => r.status === 'green').length;
+    const yellow = reportsForNextHour.filter((r: any) => r.status === 'yellow').length;
+    const red = reportsForNextHour.filter((r: any) => r.status === 'red').length;
+
+    if (red > green && red >= yellow) {
+      forecastMessage = `Historicamente, o fluxo piora às ${nextHour}:00.`;
+      forecastColor = 'text-rose-500';
+      ForecastIcon = AlertTriangle;
+    } else if (green >= yellow && green >= red) {
+      forecastMessage = `Costuma esvaziar por volta de ${nextHour}:00.`;
+      forecastColor = 'text-emerald-500';
+      ForecastIcon = CheckCircle2;
+    } else {
+      forecastMessage = `Tende a ficar moderado às ${nextHour}:00.`;
+      forecastColor = 'text-amber-500';
+      ForecastIcon = Clock;
+    }
+  }
 
   const statusConfig = {
     green: {
@@ -115,29 +149,46 @@ export default function Dash() {
     >
       <div 
         className="absolute top-0 left-0 right-0 h-[40%] blur-3xl pointer-events-none opacity-[0.4] transition-all duration-[1500ms]"
-        style={{ background: `linear-gradient(to bottom, ${activeConfig.glowColor}, transparent)` }}
+        style={{ background: `linear-gradient(to bottom, ${activeConfig.color}, transparent)` }}
       ></div>
 
       <div 
         className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-[110px] pointer-events-none opacity-[0.45] transition-all duration-1000"
-        style={{ backgroundColor: activeConfig.glowColor }}
+        style={{ backgroundColor: activeConfig.color }}
       ></div>
 
-      <div className="flex flex-col space-y-1 relative z-10">
-        <span className={`text-[11px] font-sans tracking-[0.2em] font-black uppercase ${isDark ? 'text-zinc-400/90' : 'text-zinc-500/90'}`}>
-          Hoje • <span className={isDark ? accentTextClass : (isParking ? 'text-amber-600' : 'text-blue-600')}>{dayName}</span>
-        </span>
-        <span className={`text-xs font-sans font-medium tracking-wide ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-          {formattedDate}
-        </span>
-        {error && (
-          <div className="mt-2 text-[10px] font-sans px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1.5 self-start">
-            <span>⚠️</span> Erro: {error}
+      <div className="flex justify-between items-start relative z-10">
+        <div className="flex flex-col space-y-1">
+          <span className={`text-[11px] font-sans tracking-[0.2em] font-black uppercase ${isDark ? 'text-zinc-400/90' : 'text-zinc-500/90'}`}>
+            Hoje • <span className={isDark ? accentTextClass : (isParking ? 'text-amber-600' : 'text-blue-600')}>{dayName}</span>
+          </span>
+          <span className={`text-xs font-sans font-medium tracking-wide ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+            {formattedDate}
+          </span>
+          {error && (
+            <div className="mt-2 text-[10px] font-sans px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1.5 self-start">
+              <span>⚠️</span> Erro: {error}
+            </div>
+          )}
+        </div>
+
+        {/* Gamification Badge */}
+        <div 
+          onClick={() => navigate(activeDomain === 'parking' ? '/estacionamento/loja' : '/bandejao/loja')}
+          className={`flex flex-col items-end p-2 rounded-2xl border backdrop-blur-sm shadow-sm transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+            isDark ? 'bg-zinc-900/60 border-amber-500/30 hover:bg-zinc-800' : 'bg-white/80 border-amber-500/30 hover:bg-zinc-50'
+          }`}
+          title="Ver perfil e gastar pontos na Loja"
+        >
+          <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-zinc-400 mb-0.5">LotaPoints</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-black text-amber-500">{lotaPoints}</span>
+            <span className={`text-[10px] font-sans font-bold px-1.5 py-0.5 rounded-md ${isDark ? 'bg-zinc-800 text-zinc-300' : 'bg-zinc-100 text-zinc-600'}`}>Nv. {level}</span>
           </div>
-        )}
+        </div>
       </div>
 
-      <div className="flex flex-col items-center text-center justify-center my-auto py-8 relative z-10 w-full max-w-xs mx-auto">
+      <div className="flex flex-col items-center text-center justify-center my-auto py-4 relative z-10 w-full max-w-xs mx-auto">
         <motion.div 
           animate={{ y: [0, -8, 0] }} 
           transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
@@ -163,7 +214,23 @@ export default function Dash() {
         </p>
       </div>
 
-      <div className="relative z-10 w-full max-w-sm mx-auto mt-2">
+      {forecastMessage && (
+        <div className={`relative z-10 w-full max-w-sm mx-auto mt-0 mb-4 p-4 rounded-[2rem] border backdrop-blur-md flex items-center gap-3 shadow-lg ${
+          isDark ? 'bg-[#121215]/65 border-white/[0.06]' : 'bg-white/80 border-zinc-200/60'
+        }`}>
+          <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-zinc-900/50 border-white/5' : 'bg-zinc-100 border-zinc-200/30'} shrink-0 ${forecastColor}`}>
+            <ForecastIcon size={18} className="stroke-[2.5px]" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[9px] uppercase font-mono font-bold tracking-widest text-zinc-500 mb-0.5">Previsão IA (Próx. Hora)</span>
+            <span className={`text-[12px] font-sans font-bold leading-tight ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
+              {forecastMessage}
+            </span>
+          </div>
+        </div>
+      )}
+
+      <div className="relative z-10 w-full max-w-sm mx-auto mt-0">
         <div 
           className={`backdrop-blur-xl border rounded-[2rem] p-5.5 shadow-xl flex flex-col space-y-4 transition-all duration-500 ${
             isDark 

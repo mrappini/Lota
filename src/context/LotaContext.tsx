@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { ParkingReport, CafeteriaReport, StatusType } from '../types';
+import { StatusType } from '../types';
+import { useSupabaseSync } from '../hooks/useSupabaseSync';
+import { useGamification } from '../hooks/useGamification';
+import toast from 'react-hot-toast';
 
 export type Domain = 'parking' | 'cafeteria';
 
@@ -25,19 +28,30 @@ interface LotaContextType {
   adminOverride: any;
   setAdminOverride: any;
   clearMyVote: () => Promise<void>;
+
+  lotaPoints: number;
+  level: number;
+  progress: number;
+  nextLevelPoints: number;
+  
+  inventory: string[];
+  equippedTheme: string;
+  equippedLogo: string;
+  buyItem: (id: string, price: number, type: 'theme' | 'logo') => boolean;
+  equipItem: (id: string, type: 'theme' | 'logo', force?: boolean) => void;
+  spendPoints: (amount: number) => boolean;
+  addPoints: (amount: number) => number;
 }
 
 const LotaContext = createContext<LotaContextType | undefined>(undefined);
 
 export const LotaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeDomain, setActiveDomain] = useState<Domain | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [parkingReports, setParkingReports] = useState<ParkingReport[]>([]);
-  const [cafeteriaReports, setCafeteriaReports] = useState<CafeteriaReport[]>([]);
   const [adminOverride, setAdminOverride] = useState<StatusType | null>(null);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
+
+  const { parkingReports, cafeteriaReports, loading, error, setError, fetchData } = useSupabaseSync();
+  const { lotaPoints, addPoints, spendPoints, level, progress, nextLevelPoints, inventory, buyItem, equipItem, equippedTheme, equippedLogo } = useGamification();
 
   const [userId] = useState<string>(() => {
     let id = localStorage.getItem('lota-user-id');
@@ -53,63 +67,6 @@ export const LotaProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(interval);
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const isoWeekAgo = weekAgo.toISOString();
-
-      const { data: pData, error: pError } = await supabase
-        .from('parking_status')
-        .select('*')
-        .gte('timestamp', isoWeekAgo)
-        .order('timestamp', { ascending: false });
-        
-      if (pError) throw pError;
-      
-      const { data: cData, error: cError } = await supabase
-        .from('cafeteria_status')
-        .select('*')
-        .gte('timestamp', isoWeekAgo)
-        .order('timestamp', { ascending: false });
-
-      if (cError) throw cError;
-
-      setParkingReports(pData as ParkingReport[]);
-      setCafeteriaReports(cData as CafeteriaReport[]);
-      setLoading(false);
-    } catch (err: any) {
-      console.error('Erro ao buscar do Supabase', err);
-      setError(err.message);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-    
-    // Supabase Realtime via WebSockets instead of Polling
-    const parkingSub = supabase
-      .channel('public:parking_status')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'parking_status' }, () => {
-        fetchData();
-      })
-      .subscribe();
-
-    const cafeteriaSub = supabase
-      .channel('public:cafeteria_status')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'cafeteria_status' }, () => {
-        fetchData();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(parkingSub);
-      supabase.removeChannel(cafeteriaSub);
-    };
-  }, []);
-
-  // Compute common variables based on active domain
   const activeReports = activeDomain === 'parking' ? parkingReports : cafeteriaReports;
   
   const oneHourAgo = new Date(currentTime.getTime() - 60 * 60 * 1000);
@@ -133,7 +90,6 @@ export const LotaProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ? Math.max(0, Math.floor((currentTime.getTime() - new Date(lastReportData.timestamp).getTime()) / 60000))
     : null;
 
-  // Map to legacy format so other screens don't break
   const allReportsMapped = activeReports.map(r => ({
     ...r,
     status: r.status_texto,
@@ -167,21 +123,25 @@ export const LotaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const tableName = activeDomain === 'parking' ? 'parking_status' : 'cafeteria_status';
       
       if (hasReportedToday && todayReport) {
-        // Anti-spam: Update previous vote today instead of adding new one
         const { error } = await supabase.from(tableName)
           .update({ status_texto: status, timestamp: new Date().toISOString() })
           .eq('id', todayReport.id);
         if (error) throw error;
+        toast.success('Relatório atualizado com sucesso!');
       } else {
-        // First vote of the day
         const { error } = await supabase.from(tableName)
           .insert([{ status_texto: status, user_id: userId }]);
         if (error) throw error;
+        
+        // Add points for Gamification!
+        addPoints(10);
+        toast.success('+10 LotaPoints! Relatório enviado.', { icon: '✨' });
       }
       
       await fetchData();
     } catch (err: any) {
       setError('Erro ao enviar: ' + err.message);
+      toast.error('Erro ao enviar relatório.');
     }
   };
 
@@ -192,8 +152,10 @@ export const LotaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.from(tableName).delete().eq('id', todayReport.id);
       if (error) throw error;
       await fetchData();
+      toast.success('Seu voto foi apagado.');
     } catch (err: any) {
       setError('Erro ao deletar: ' + err.message);
+      toast.error('Erro ao apagar voto.');
     }
   };
 
@@ -207,11 +169,10 @@ export const LotaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       recentReports: recentReportsMapped,
       lastReport: lastReportMapped,
       
-      hasReportedToday,
-      todayReport,
-      adminOverride,
-      setAdminOverride,
-      clearMyVote
+      hasReportedToday, todayReport, adminOverride, setAdminOverride, clearMyVote,
+      
+      lotaPoints, level, progress, nextLevelPoints,
+      inventory, buyItem, equipItem, equippedTheme, equippedLogo, spendPoints, addPoints
     }}>
       {children}
     </LotaContext.Provider>

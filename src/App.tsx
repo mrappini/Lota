@@ -6,8 +6,11 @@ import Dash from './pages/Dash';
 import Report from './pages/Report';
 import Status from './pages/Status';
 import History from './pages/History';
-import { Download, ChevronRight, X, AlertTriangle, User, ParkingSquare, Coffee, Home, Plus, Activity, BarChart3, Sun, Moon, Laptop, Settings, Sliders, Database, CheckCircle2, Clock, Sparkles, ChevronDown, Info, HelpCircle, ShieldAlert, Lock, Car, Utensils, LogOut } from 'lucide-react';
+import Store from './pages/Store';
+import { Download, ChevronRight, X, AlertTriangle, User, ParkingSquare, Coffee, Home, Plus, Activity, BarChart3, Sun, Moon, Laptop, Settings, Sliders, Database, CheckCircle2, Clock, Sparkles, ChevronDown, Info, HelpCircle, ShieldAlert, Lock, Car, Utensils, LogOut, ShoppingCart } from 'lucide-react';
 import { LotaLogo } from './components/LotaLogo';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
 
 function ThemeSelector() {
@@ -74,15 +77,20 @@ function NavigationFooter() {
       icon: Home,
     },
     {
+      to: `${basePath}/status`,
+      label: 'Status',
+      icon: Activity,
+    },
+    {
       to: `${basePath}/reportar`,
       label: 'Reportar',
       icon: Plus,
       isAction: true,
     },
     {
-      to: `${basePath}/status`,
-      label: 'Status',
-      icon: Activity,
+      to: `${basePath}/loja`,
+      label: 'Loja',
+      icon: ShoppingCart,
     },
     {
       to: `${basePath}/historico`,
@@ -194,7 +202,11 @@ function AppContent() {
     clearMyVote,
     todayReport,
     activeDomain,
-    setActiveDomain
+    setActiveDomain,
+    equippedTheme,
+    equippedLogo,
+    equipItem,
+    addPoints
   } = useLota();
 
   const [clickCount, setClickCount] = useState(0);
@@ -205,6 +217,11 @@ function AppContent() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isInjecting, setIsInjecting] = useState(false);
   const [adminNotification, setAdminNotification] = useState<string | null>(null);
+  const [triggerError, setTriggerError] = useState(false);
+
+  if (triggerError) {
+    throw new Error('Erro intencional gerado pelo painel administrador para testes de ErrorBoundary.');
+  }
 
   const isParking = activeDomain === 'parking' || activeDomain === null;
   const accentTextClass = isParking ? 'text-[#FACC15]' : 'text-blue-500';
@@ -303,10 +320,33 @@ function AppContent() {
   };
 
 
+  let themeBgClass = isDark ? 'bg-[#121212] text-white selection:bg-white/20' : 'bg-zinc-100 text-zinc-900 selection:bg-black/10';
+  let innerThemeClass = isDark ? 'sm:border-zinc-800/40 bg-[#18181b]' : 'sm:border-zinc-200/60 bg-zinc-50';
+  
+  let logoForceColor: string | undefined = undefined;
+
+  if (equippedLogo === 'rainbow_logo') {
+    logoForceColor = 'rainbow';
+  } else if (equippedTheme === 'hacker_theme') {
+    themeBgClass = isDark ? 'bg-[#030906] text-[#00ff41] font-mono selection:bg-[#00ff41]/20' : 'bg-[#e3fcf0] text-[#008f11] font-mono selection:bg-[#00ff41]/20';
+    innerThemeClass = isDark ? 'sm:border-[#00ff41]/40 bg-[#07130a] shadow-[0_0_50px_rgba(0,255,65,0.1)]' : 'sm:border-[#008f11]/60 bg-[#d1f5e0] shadow-[0_0_50px_rgba(0,143,17,0.1)]';
+    logoForceColor = '#00ff41';
+  } else if (equippedTheme === 'amethyst_theme') {
+    themeBgClass = isDark ? 'bg-[#0f041b] text-[#e0b0ff] selection:bg-[#e0b0ff]/20' : 'bg-[#f4ebff] text-[#4b0082] selection:bg-[#9932cc]/20';
+    innerThemeClass = isDark ? 'sm:border-[#8a2be2]/40 bg-[#170a29] shadow-[0_0_50px_rgba(138,43,226,0.1)]' : 'sm:border-[#ba55d3]/60 bg-[#f9f3ff] shadow-[0_0_50px_rgba(186,85,211,0.15)]';
+    logoForceColor = '#ba55d3';
+  } else if (equippedTheme === 'algodao_doce_theme') {
+    themeBgClass = isDark ? 'bg-[#2a0e1c] text-[#ffb6c1] selection:bg-[#ffb6c1]/20 font-sans' : 'bg-[#fff0f5] text-[#ff69b4] selection:bg-[#ff69b4]/20 font-sans';
+    innerThemeClass = isDark ? 'sm:border-[#ff1493]/30 bg-[#3d1428] shadow-[0_0_50px_rgba(255,20,147,0.15)]' : 'sm:border-[#ffb6c1]/60 bg-[#ffe4e1] shadow-[0_0_50px_rgba(255,182,193,0.3)]';
+    logoForceColor = '#ff69b4';
+  } else if (equippedTheme === 'brazil_theme') {
+    themeBgClass = isDark ? 'bg-[#002714] text-[#ffdf00] selection:bg-[#ffdf00]/20' : 'bg-[#eafef0] text-[#009b3a] selection:bg-[#ffdf00]/30';
+    innerThemeClass = isDark ? 'sm:border-[#ffdf00]/40 bg-[#004d26] shadow-[0_0_50px_rgba(255,223,0,0.1)]' : 'sm:border-[#009b3a]/40 bg-[#ffffff] shadow-[0_0_50px_rgba(0,155,58,0.2)]';
+    logoForceColor = 'brazil';
+  }
+
   return (
-    <div className={`min-h-screen flex justify-center items-center font-sans antialiased overflow-x-hidden p-0 sm:p-4 transition-colors duration-500 ${
-      isDark ? 'bg-[#121212] text-white' : 'bg-zinc-100 text-zinc-900'
-    }`}>
+    <div className={`min-h-screen flex justify-center items-center font-sans antialiased overflow-x-hidden p-0 sm:p-4 transition-colors duration-500 ${themeBgClass}`}>
       
       {/* Absolute Admin micro-toasts feedback */}
       <AnimatePresence>
@@ -322,11 +362,7 @@ function AppContent() {
         )}
       </AnimatePresence>
 
-      <div className={`w-full max-w-md h-screen sm:h-[85vh] sm:max-h-[900px] sm:rounded-[3rem] sm:border shadow-2xl relative flex flex-col overflow-hidden transition-all duration-500 ${
-        isDark 
-          ? 'sm:border-zinc-800/40 bg-[#18181b]' 
-          : 'sm:border-zinc-200/60 bg-zinc-50'
-      }`}>
+      <div className={`w-full max-w-md h-screen sm:h-[85vh] sm:max-h-[900px] sm:rounded-[3rem] sm:border shadow-2xl relative flex flex-col overflow-hidden transition-all duration-500 ${innerThemeClass}`}>
 
         {activeDomain === null ? (
           <motion.div 
@@ -344,7 +380,7 @@ function AppContent() {
 
             <div className="text-center mb-10 z-10">
               <div className="flex justify-center mb-5">
-                <LotaLogo className="h-12 w-auto drop-shadow-2xl" isDark={isDark} activeDomain={activeDomain} />
+                <LotaLogo className="h-12 w-auto drop-shadow-2xl" isDark={isDark} activeDomain={activeDomain} forceColor={logoForceColor} />
               </div>
               <h1 className="text-[28px] font-black font-sans tracking-tight mb-2">Selecione o Fluxo</h1>
               <p className={`text-[13px] font-sans font-medium max-w-[240px] mx-auto leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
@@ -613,27 +649,32 @@ function AppContent() {
         <div className={`px-5 pt-5 pb-2 flex justify-between items-center z-40 transition-all ${
           isDark ? 'bg-zinc-950/90' : 'bg-zinc-50/90'
         }`}>
+          {/* Invisible Admin Trigger Area (Top center) */}
           <div 
             onClick={handleBrandingClick}
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 z-50 cursor-pointer"
+            title="Área secreta: Toque 5 vezes para habilitar controles de teste"
+          />
+
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveDomain(null);
+              navigate('/');
+            }}
             className="flex items-center space-x-2 cursor-pointer select-none active:scale-95 transition-transform"
-            title="Toque 5 vezes para habilitar controles de teste"
+            title="Trocar de domínio"
           >
             <div className="flex items-center gap-1.5 py-0.5">
-              <LotaLogo className="h-5.5 w-auto" isDark={isDark} activeDomain={activeDomain} />
+              <LotaLogo className="h-5.5 w-auto" isDark={isDark} activeDomain={activeDomain} forceColor={logoForceColor} />
               {isAdminUnlocked && (
                 <ShieldAlert size={12} className="text-[#FACC15] animate-pulse shrink-0" />
               )}
             </div>
             <span 
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveDomain(null);
-                navigate('/');
-              }}
               className={`text-[10px] px-2 py-0.5 rounded-full font-sans font-extrabold tracking-wide uppercase transition-all flex items-center gap-1 cursor-pointer active:scale-95 ${
               isDark ? `bg-zinc-900 hover:bg-zinc-800 ${accentTextClass} border border-zinc-800` : 'bg-zinc-200/80 hover:bg-zinc-300 text-zinc-800 border border-zinc-300/30'
             }`}
-              title="Trocar de domínio"
             >
               {activeDomain === 'parking' ? 'Estacionamento' : 'Bandejão'} <ChevronDown size={10} />
             </span>
@@ -769,10 +810,67 @@ function AppContent() {
                     >
                       Apagar Meu Voto
                     </button>
-                    <div className="py-1.5 px-3 text-[10px] rounded-lg font-mono bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center gap-1 font-bold">
+                    <button
+                      onClick={() => setTriggerError(true)}
+                      className="py-1.5 px-3 text-[10px] rounded-lg font-sans bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 text-rose-500 transition-all font-bold cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <AlertTriangle size={10} /> Quebrar App
+                    </button>
+                    <div className="col-span-2 py-1.5 px-3 text-[10px] rounded-lg font-mono bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center gap-1 font-bold">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                       WSS Online
                     </div>
+                  </div>
+                </div>
+
+                {/* 3. Cosmetics Test */}
+                <div className="space-y-1.5">
+                  <span className="text-[9px] font-mono text-zinc-500 uppercase block font-bold">
+                    3. TESTAR COSMÉTICOS E PONTOS
+                  </span>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    <button
+                      onClick={() => { equipItem('default', 'theme', true); equipItem('default', 'logo', true); }}
+                      className="py-1 text-[9px] rounded-lg font-sans font-bold border transition-all cursor-pointer bg-zinc-800 text-white"
+                    >
+                      Limpar
+                    </button>
+                    <button
+                      onClick={() => equipItem('rainbow_logo', 'logo', true)}
+                      className="py-1 text-[9px] rounded-lg font-sans font-bold border transition-all cursor-pointer bg-amber-500/20 text-amber-500"
+                    >
+                      🌈 Rainbow
+                    </button>
+                    <button
+                      onClick={() => equipItem('hacker_theme', 'theme', true)}
+                      className="py-1 text-[9px] rounded-lg font-sans font-bold border transition-all cursor-pointer bg-emerald-500/20 text-emerald-500"
+                    >
+                      Hacker
+                    </button>
+                    <button
+                      onClick={() => equipItem('amethyst_theme', 'theme', true)}
+                      className="py-1 text-[9px] rounded-lg font-sans font-bold border transition-all cursor-pointer bg-purple-500/20 text-purple-500"
+                    >
+                      Ametista
+                    </button>
+                    <button
+                      onClick={() => equipItem('algodao_doce_theme', 'theme', true)}
+                      className="py-1 text-[9px] rounded-lg font-sans font-bold border transition-all cursor-pointer bg-pink-500/20 text-pink-500"
+                    >
+                      Algodão
+                    </button>
+                    <button
+                      onClick={() => equipItem('brazil_theme', 'theme', true)}
+                      className="py-1 text-[9px] rounded-lg font-sans font-bold border transition-all cursor-pointer bg-yellow-500/20 text-yellow-500 border-green-500/30"
+                    >
+                      🇧🇷 Brasil
+                    </button>
+                    <button
+                      onClick={() => { addPoints(150); showAdminToast("💰 +150 LotaPoints Adicionados!"); }}
+                      className="col-span-2 py-1 text-[9px] rounded-lg font-sans font-bold border transition-all cursor-pointer bg-blue-500/20 text-blue-400 border-blue-500/30"
+                    >
+                      +150 Pts
+                    </button>
                   </div>
                 </div>
 
@@ -822,12 +920,21 @@ function AppContent() {
                       <span className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Acesso rápido na tela inicial</span>
                     </div>
                   </div>
-                  <button 
-                    onClick={handleInstallClick}
-                    className="px-5 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-full shadow-lg hover:bg-blue-500 active:scale-95 transition-all"
-                  >
-                    Instalar
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={handleInstallClick}
+                      className="px-5 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-full shadow-lg hover:bg-blue-500 active:scale-95 transition-all"
+                    >
+                      Instalar
+                    </button>
+                    <button
+                      onClick={() => setDeferredPrompt(null)}
+                      className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-white/10 text-zinc-400 hover:text-white' : 'hover:bg-zinc-200 text-zinc-500 hover:text-zinc-900'}`}
+                      title="Fechar"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -840,16 +947,19 @@ function AppContent() {
               <Route path="/reportar" element={<Report />} />
               <Route path="/status" element={<Status />} />
               <Route path="/historico" element={<History />} />
+              <Route path="/loja" element={<Store />} />
               
               <Route path="/estacionamento" element={<Dash />} />
               <Route path="/estacionamento/reportar" element={<Report />} />
               <Route path="/estacionamento/status" element={<Status />} />
               <Route path="/estacionamento/historico" element={<History />} />
+              <Route path="/estacionamento/loja" element={<Store />} />
 
               <Route path="/bandejao" element={<Dash />} />
               <Route path="/bandejao/reportar" element={<Report />} />
               <Route path="/bandejao/status" element={<Status />} />
               <Route path="/bandejao/historico" element={<History />} />
+              <Route path="/bandejao/loja" element={<Store />} />
             </Routes>
           </AnimatePresence>
         </main>
@@ -866,12 +976,21 @@ function AppContent() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <LotaProvider>
-          <AppContent />
-        </LotaProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ThemeProvider>
+          <LotaProvider>
+            <Toaster 
+              position="bottom-center" 
+              toastOptions={{ 
+                className: 'font-sans font-bold text-sm tracking-tight border border-zinc-200/50 shadow-2xl rounded-2xl',
+                style: { background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)' }
+              }} 
+            />
+            <AppContent />
+          </LotaProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
